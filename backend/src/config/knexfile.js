@@ -1,4 +1,4 @@
-const env = require('./src/config/env');
+const env = require('./env');
 
 module.exports = {
   development: {
@@ -8,7 +8,7 @@ module.exports = {
     },
     useNullAsDefault: true,
     migrations: {
-      directory: './migrations',
+      directory: '../migrations',
     },
   },
   test: {
@@ -18,7 +18,7 @@ module.exports = {
     },
     useNullAsDefault: true,
     migrations: {
-      directory: './migrations',
+      directory: '../migrations',
     },
   },
   production: {
@@ -28,7 +28,7 @@ module.exports = {
     },
     useNullAsDefault: true,
     migrations: {
-      directory: './migrations',
+      directory: '../migrations',
     },
   },
 };
