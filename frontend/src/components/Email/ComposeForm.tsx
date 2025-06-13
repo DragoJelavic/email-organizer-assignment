@@ -3,10 +3,17 @@ import {
   Box,
   TextField,
   Button,
-  Paper,
   Typography,
   CircularProgress,
+  Divider,
+  IconButton,
+  InputAdornment,
 } from '@mui/material';
+import AttachFileIcon from '@mui/icons-material/AttachFile';
+import FormatBoldIcon from '@mui/icons-material/FormatBold';
+import FormatItalicIcon from '@mui/icons-material/FormatItalic';
+import FormatUnderlinedIcon from '@mui/icons-material/FormatUnderlined';
+import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import useEmailStore from '../../store/emailStore';
 
 interface ComposeFormProps {
@@ -57,50 +64,119 @@ const ComposeForm: React.FC<ComposeFormProps> = ({
   };
 
   return (
-    <Paper sx={{ p: 3, maxWidth: 800, mx: 'auto', mt: 3 }}>
-      <Typography variant="h6" gutterBottom>
-        {initialEmail ? 'Edit Email' : 'Compose Email'}
-      </Typography>
-      <form onSubmit={handleSubmit}>
-        <TextField
-          fullWidth
-          label="To"
-          name="to"
-          type="email"
-          value={formData.to}
-          onChange={handleChange}
-          required
-          margin="normal"
-        />
-        <TextField
-          fullWidth
-          label="Subject"
-          name="subject"
-          value={formData.subject}
-          onChange={handleChange}
-          required
-          margin="normal"
-        />
-        <TextField
-          fullWidth
-          label="Message"
-          name="body"
-          value={formData.body}
-          onChange={handleChange}
-          required
-          multiline
-          rows={6}
-          margin="normal"
-        />
-        <Box
-          sx={{
-            mt: 2,
-            display: 'flex',
-            gap: 2,
-            justifyContent: 'flex-end',
-          }}
+    <Box
+      component="form"
+      onSubmit={handleSubmit}
+      sx={{ width: '100%' }}
+    >
+      <TextField
+        fullWidth
+        label="To"
+        name="to"
+        type="email"
+        value={formData.to}
+        onChange={handleChange}
+        required
+        margin="normal"
+        variant="outlined"
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ mr: 1 }}
+              >
+                To:
+              </Typography>
+            </InputAdornment>
+          ),
+        }}
+        sx={{ mb: 2 }}
+      />
+
+      <TextField
+        fullWidth
+        label="Subject"
+        name="subject"
+        value={formData.subject}
+        onChange={handleChange}
+        required
+        margin="normal"
+        variant="outlined"
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ mr: 1 }}
+              >
+                Subject:
+              </Typography>
+            </InputAdornment>
+          ),
+        }}
+        sx={{ mb: 2 }}
+      />
+
+      <Divider sx={{ my: 2 }} />
+
+      <Box sx={{ mb: 2, display: 'flex', gap: 1 }}>
+        <IconButton size="small">
+          <FormatBoldIcon fontSize="small" />
+        </IconButton>
+        <IconButton size="small">
+          <FormatItalicIcon fontSize="small" />
+        </IconButton>
+        <IconButton size="small">
+          <FormatUnderlinedIcon fontSize="small" />
+        </IconButton>
+        <IconButton size="small">
+          <FormatListBulletedIcon fontSize="small" />
+        </IconButton>
+        <IconButton size="small">
+          <AttachFileIcon fontSize="small" />
+        </IconButton>
+      </Box>
+
+      <TextField
+        fullWidth
+        name="body"
+        value={formData.body}
+        onChange={handleChange}
+        required
+        multiline
+        rows={12}
+        margin="normal"
+        variant="outlined"
+        placeholder="Write your message here..."
+        sx={{ mb: 3 }}
+      />
+
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mt: 2,
+        }}
+      >
+        <Button
+          variant="outlined"
+          startIcon={<AttachFileIcon />}
+          sx={{ borderRadius: 28 }}
         >
-          <Button onClick={onClose} disabled={loading}>
+          Attach
+        </Button>
+
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <Button
+            onClick={onClose}
+            disabled={loading}
+            variant="outlined"
+            sx={{ borderRadius: 28 }}
+          >
             Cancel
           </Button>
           <Button
@@ -110,12 +186,20 @@ const ComposeForm: React.FC<ComposeFormProps> = ({
             startIcon={
               loading ? <CircularProgress size={20} /> : null
             }
+            sx={{
+              borderRadius: 28,
+              px: 3,
+              boxShadow: 2,
+              '&:hover': {
+                boxShadow: 4,
+              },
+            }}
           >
             {initialEmail ? 'Update' : 'Send'}
           </Button>
         </Box>
-      </form>
-    </Paper>
+      </Box>
+    </Box>
   );
 };
 
