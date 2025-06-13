@@ -1,7 +1,28 @@
-const AIController = require('../controllers/aiController');
+const { classifyAndProcess } = require('../controllers/aiController');
 
-async function aiRoutes(fastify, options) {
-  fastify.post('/classify', AIController.classifyIntent);
+const promptSchema = {
+  type: 'object',
+  required: ['prompt'],
+  properties: {
+    prompt: { type: 'string' },
+  },
+};
+
+function aiRoutes(fastify, options, done) {
+  // Classify and process prompt
+  fastify.post(
+    '/classify',
+    {
+      schema: {
+        body: promptSchema,
+      },
+    },
+    async (request, reply) => {
+      return classifyAndProcess(request, reply);
+    }
+  );
+
+  done();
 }
 
 module.exports = aiRoutes;

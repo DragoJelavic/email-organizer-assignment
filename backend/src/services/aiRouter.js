@@ -1,32 +1,31 @@
-const AIService = require('./aiService');
+const OpenAI = require('openai');
+const { OPENAI_API_KEY } = require('../config/env');
 
-class AIRouter {
-  static async routeRequest(text) {
-    try {
-      const category = await AIService.classifyIntent(text);
+const openai = new OpenAI({
+  apiKey: OPENAI_API_KEY,
+});
 
-      switch (category) {
-        case 'SALES':
-          return {
-            type: 'SALES',
-            assistant: 'SalesAssistant',
-          };
-        case 'FOLLOWUP':
-          return {
-            type: 'FOLLOWUP',
-            assistant: 'FollowUpAssistant',
-          };
-        default:
-          return {
-            type: 'OTHER',
-            assistant: null,
-          };
-      }
-    } catch (error) {
-      console.error('AI Routing Error:', error);
-      throw new Error('Failed to route email request');
-    }
-  }
+async function classifyEmail(email) {
+  const prompt = `Classify the following email into one of these categories:
+  - SALES: Outreach, proposals, business development
+  - FOLLOWUP: Check-ins, reminders, status updates
+  - OTHER: Everything else
+
+  Email:
+  From: ${email.from}
+  Subject: ${email.subject}
+  Body: ${email.body}
+
+  Return only the category name.`;
+
+  const completion = await openai.chat.completions.create({
+    messages: [{ role: 'user', content: prompt }],
+    model: 'gpt-4',
+  });
+
+  return completion.choices[0].message.content.trim();
 }
 
-module.exports = AIRouter;
+module.exports = {
+  classifyEmail,
+};

@@ -12,7 +12,11 @@ Requirements:
 - 7-10 words per sentence
 - Professional but friendly tone
 - Clear call-to-action
-- Personalized when possible`;
+- Personalized when possible
+
+Format your response as:
+Subject: [Your subject line]
+[Your email body]`;
   }
 
   async generateResponse(email) {

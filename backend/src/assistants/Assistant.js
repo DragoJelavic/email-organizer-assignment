@@ -46,11 +46,33 @@ class Assistant {
         temperature: 0.7,
       });
 
+      let currentField = 'subject';
+      let buffer = '';
+
       for await (const chunk of stream) {
         const content = chunk.choices[0]?.delta?.content || '';
         if (content) {
-          onChunk(content);
+          buffer += content;
+
+          // Check if we have a complete sentence or field
+          if (content.includes('.') || content.includes('\n')) {
+            const parts = buffer.split('\n');
+            if (parts.length > 1) {
+              // First part is subject, rest is body
+              onChunk({ field: 'subject', content: parts[0].trim() });
+              onChunk({
+                field: 'body',
+                content: parts.slice(1).join('\n').trim(),
+              });
+              buffer = '';
+            }
+          }
         }
+      }
+
+      // Handle any remaining content
+      if (buffer.trim()) {
+        onChunk({ field: 'body', content: buffer.trim() });
       }
     } catch (error) {
       console.error('Assistant Streaming Error:', error);

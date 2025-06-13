@@ -11,7 +11,11 @@ Requirements:
 - Courteous and respectful tone
 - Clear reference to previous interaction
 - Gentle reminder or check-in
-- Professional closing`;
+- Professional closing
+
+Format your response as:
+Subject: [Your subject line]
+[Your email body]`;
   }
 
   async generateResponse(email) {
