@@ -15,6 +15,8 @@ import FormatItalicIcon from '@mui/icons-material/FormatItalic';
 import FormatUnderlinedIcon from '@mui/icons-material/FormatUnderlined';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import useEmailStore from '../../store/emailStore';
+import { AIButton } from '../AI/AIButton';
+import { useAI } from '../../hooks/useAI';
 
 interface ComposeFormProps {
   onClose: () => void;
@@ -31,6 +33,7 @@ const ComposeForm: React.FC<ComposeFormProps> = ({
   initialEmail,
 }) => {
   const { createEmail, updateEmail } = useEmailStore();
+  const { classifyIntent } = useAI();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     to: initialEmail?.to || '',
@@ -61,6 +64,35 @@ const ComposeForm: React.FC<ComposeFormProps> = ({
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleAIGenerate = async (prompt: string) => {
+    try {
+      const result = await classifyIntent(prompt);
+
+      // Update form based on AI classification
+      if (result.type === 'SALES') {
+        setFormData((prev) => ({
+          ...prev,
+          subject: 'Business Opportunity',
+          body: `I hope this email finds you well. I'm reaching out because I believe our services could be valuable to your business. Would you be open to a brief conversation about how we might help you achieve your goals?`,
+        }));
+      } else if (result.type === 'FOLLOWUP') {
+        setFormData((prev) => ({
+          ...prev,
+          subject: 'Following Up',
+          body: `I hope you're doing well. I wanted to follow up on our previous conversation. Would you have some time to discuss this further?`,
+        }));
+      } else {
+        // For OTHER type, we'll just use the prompt as the body
+        setFormData((prev) => ({
+          ...prev,
+          body: prompt,
+        }));
+      }
+    } catch (error) {
+      console.error('AI Generation Error:', error);
+    }
   };
 
   return (
@@ -122,7 +154,9 @@ const ComposeForm: React.FC<ComposeFormProps> = ({
 
       <Divider sx={{ my: 2 }} />
 
-      <Box sx={{ mb: 2, display: 'flex', gap: 1 }}>
+      <Box
+        sx={{ mb: 2, display: 'flex', gap: 1, alignItems: 'center' }}
+      >
         <IconButton size="small">
           <FormatBoldIcon fontSize="small" />
         </IconButton>
@@ -138,6 +172,8 @@ const ComposeForm: React.FC<ComposeFormProps> = ({
         <IconButton size="small">
           <AttachFileIcon fontSize="small" />
         </IconButton>
+        <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
+        <AIButton onGenerate={handleAIGenerate} />
       </Box>
 
       <TextField

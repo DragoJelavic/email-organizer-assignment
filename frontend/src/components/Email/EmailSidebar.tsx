@@ -104,28 +104,20 @@ const EmailSidebar: React.FC = () => {
               </ListItemAvatar>
               <ListItemText
                 primary={
-                  <Box
+                  <Typography
+                    variant="subtitle2"
                     sx={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
+                      fontWeight: 'normal',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
                     }}
                   >
-                    <Typography
-                      variant="subtitle2"
-                      sx={{
-                        fontWeight: 'normal',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {email.subject}
-                    </Typography>
-                  </Box>
+                    {email.subject}
+                  </Typography>
                 }
                 secondary={
-                  <Box>
+                  <Box component="span">
                     <Typography
                       component="span"
                       variant="body2"
@@ -140,6 +132,7 @@ const EmailSidebar: React.FC = () => {
                       {email.to}
                     </Typography>
                     <Typography
+                      component="span"
                       variant="caption"
                       color="text.secondary"
                       sx={{
@@ -150,14 +143,6 @@ const EmailSidebar: React.FC = () => {
                       }}
                     >
                       {email.body.substring(0, 50)}...
-                    </Typography>
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                    >
-                      {new Date(
-                        email.created_at || ''
-                      ).toLocaleDateString()}
                     </Typography>
                   </Box>
                 }
