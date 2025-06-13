@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Button, Container, Grid } from '@mui/material';
+import { Box, Button, Container, Grid, Modal } from '@mui/material';
 import EmailSidebar from '../components/Email/EmailSidebar';
 import EmailViewer from '../components/Email/EmailViewer';
 import ComposeForm from '../components/Email/ComposeForm';
@@ -29,7 +29,13 @@ const Home: React.FC = () => {
         <Grid
           item
           xs={12}
-          sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}
+          sx={{
+            p: 2,
+            borderBottom: 1,
+            borderColor: 'divider',
+            display: 'flex',
+            justifyContent: 'flex-end',
+          }}
         >
           <Button variant="contained" onClick={handleCompose}>
             Compose
@@ -44,12 +50,25 @@ const Home: React.FC = () => {
           </Box>
         </Grid>
       </Grid>
-      {(isComposing || isEditing) && (
-        <ComposeForm
-          onClose={handleCloseCompose}
-          initialEmail={isEditing ? selectedEmail : undefined}
-        />
-      )}
+      <Modal
+        open={isComposing || isEditing}
+        onClose={handleCloseCompose}
+      >
+        <Box
+          sx={{
+            outline: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: '100vh',
+          }}
+        >
+          <ComposeForm
+            onClose={handleCloseCompose}
+            initialEmail={isEditing ? selectedEmail : undefined}
+          />
+        </Box>
+      </Modal>
     </Container>
   );
 };

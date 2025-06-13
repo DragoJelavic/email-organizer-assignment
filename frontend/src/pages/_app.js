@@ -1,6 +1,6 @@
-import '@/styles/globals.css';
+import '../styles/globals.css';
 import Head from 'next/head';
-import AppLayout from '@/components/Layout/AppLayout';
+import AppLayout from '../components/Layout/AppLayout';
 import {
   Box,
   Drawer,
