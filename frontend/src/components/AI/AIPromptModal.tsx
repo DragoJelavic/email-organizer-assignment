@@ -4,56 +4,34 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Button,
   TextField,
-  CircularProgress,
+  Button,
 } from '@mui/material';
 
 interface AIPromptModalProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (prompt: string) => Promise<void>;
+  onGenerate: (prompt: string) => Promise<void>;
 }
 
 export const AIPromptModal: React.FC<AIPromptModalProps> = ({
   open,
   onClose,
-  onSubmit,
+  onGenerate,
 }) => {
   const [prompt, setPrompt] = useState('');
-  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
-    if (!prompt.trim()) return;
-
-    setLoading(true);
-    try {
-      await onSubmit(prompt);
+    if (prompt.trim()) {
+      await onGenerate(prompt);
       setPrompt('');
-      onClose();
-    } catch (error) {
-      console.error('AI Prompt Error:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleClose = () => {
-    if (!loading) {
       onClose();
     }
   };
 
   return (
-    <Dialog
-      open={open}
-      onClose={handleClose}
-      maxWidth="sm"
-      fullWidth
-      disableEnforceFocus
-      keepMounted={false}
-    >
-      <DialogTitle>AI Assistant</DialogTitle>
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+      <DialogTitle>AI Email Assistant</DialogTitle>
       <DialogContent>
         <TextField
           autoFocus
@@ -64,19 +42,17 @@ export const AIPromptModal: React.FC<AIPromptModalProps> = ({
           rows={4}
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
-          disabled={loading}
+          placeholder="E.g., Write a follow-up email to a potential client about our meeting last week"
         />
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose} disabled={loading}>
-          Cancel
-        </Button>
+        <Button onClick={onClose}>Cancel</Button>
         <Button
           onClick={handleSubmit}
           variant="contained"
-          disabled={loading || !prompt.trim()}
+          color="primary"
         >
-          {loading ? <CircularProgress size={24} /> : 'Generate'}
+          Generate
         </Button>
       </DialogActions>
     </Dialog>

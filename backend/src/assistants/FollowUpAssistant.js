@@ -1,6 +1,6 @@
-const Assistant = require('./Assistant');
+const { BaseAssistant } = require('./BaseAssistant');
 
-class FollowUpAssistant extends Assistant {
+class FollowUpAssistant extends BaseAssistant {
   constructor() {
     super();
   }
@@ -73,6 +73,49 @@ Subject: [Your subject line]
 
     return completion.choices[0].message.content;
   }
+
+  async streamResponse(prompt, onChunk) {
+    try {
+      const response = await this.openai.chat.completions.create({
+        model: 'gpt-3.5-turbo',
+        messages: [
+          {
+            role: 'system',
+            content: `You are a follow-up email specialist. Generate polite, professional follow-up emails.
+            Requirements:
+            - Courteous and respectful tone
+            - Clear reference to previous interaction
+            - Gentle reminder or check-in
+            - Professional closing`,
+          },
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+        stream: true,
+      });
+
+      let currentSubject = '';
+      let currentBody = '';
+
+      for await (const chunk of response) {
+        const content = chunk.choices[0]?.delta?.content || '';
+        if (content) {
+          if (!currentSubject) {
+            currentSubject = content;
+            onChunk({ field: 'subject', content: currentSubject });
+          } else {
+            currentBody += content;
+            onChunk({ field: 'body', content: currentBody });
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Follow-up Assistant Error:', error);
+      throw error;
+    }
+  }
 }
 
-module.exports = FollowUpAssistant;
+module.exports = { FollowUpAssistant };

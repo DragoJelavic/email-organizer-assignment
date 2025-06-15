@@ -17,6 +17,7 @@ import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import useEmailStore from '../../store/emailStore';
 import { AIButton } from '../AI/AIButton';
 import { useAI } from '../../hooks/useAI';
+import { useStreaming } from '../../hooks/useStreaming';
 
 interface ComposeFormProps {
   onClose: () => void;
@@ -34,6 +35,8 @@ const ComposeForm: React.FC<ComposeFormProps> = ({
 }) => {
   const { createEmail, updateEmail } = useEmailStore();
   const { classifyIntent } = useAI();
+  const { streamResponse, loading: streamingLoading } =
+    useStreaming();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     to: initialEmail?.to || '',
@@ -68,30 +71,24 @@ const ComposeForm: React.FC<ComposeFormProps> = ({
 
   const handleAIGenerate = async (prompt: string) => {
     try {
-      const result = await classifyIntent(prompt);
+      let currentSubject = '';
+      let currentBody = '';
 
-      // Update form based on AI classification
-      if (result.type === 'SALES') {
-        setFormData((prev) => ({
-          ...prev,
-          subject: 'Business Opportunity',
-          body: `I hope this email finds you well. I'm reaching out because I believe our services could be valuable to your business. Would you be open to a brief conversation about how we might help you achieve your goals?`,
-        }));
-      } else if (result.type === 'FOLLOWUP') {
-        setFormData((prev) => ({
-          ...prev,
-          subject: 'Following Up',
-          body: `I hope you're doing well. I wanted to follow up on our previous conversation. Would you have some time to discuss this further?`,
-        }));
-      } else {
-        // For OTHER type, we'll just use the prompt as the body
-        setFormData((prev) => ({
-          ...prev,
-          body: prompt,
-        }));
-      }
+      await streamResponse(prompt, (response) => {
+        if (response.field === 'subject') {
+          currentSubject = response.content;
+          setFormData((prev) => ({
+            ...prev,
+            subject: currentSubject,
+          }));
+        } else if (response.field === 'body') {
+          currentBody = response.content;
+          setFormData((prev) => ({ ...prev, body: currentBody }));
+        }
+      });
     } catch (error) {
-      console.error('AI Generation Error:', error);
+      console.error('Error generating email:', error);
+      // Handle error appropriately
     }
   };
 
@@ -173,7 +170,10 @@ const ComposeForm: React.FC<ComposeFormProps> = ({
           <AttachFileIcon fontSize="small" />
         </IconButton>
         <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
-        <AIButton onGenerate={handleAIGenerate} />
+        <AIButton
+          onGenerate={handleAIGenerate}
+          loading={streamingLoading}
+        />
       </Box>
 
       <TextField

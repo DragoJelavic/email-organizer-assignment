@@ -1,24 +1,29 @@
 const { classifyEmail } = require('../services/aiRouter');
-const AssistantFactory = require('../assistants/AssistantFactory');
+const {
+  AssistantFactory,
+} = require('../assistants/AssistantFactory');
 
-async function classifyAndProcess(request, reply) {
+const classifyAndProcess = async (request, reply) => {
   try {
     const { prompt } = request.body;
 
-    if (!prompt) {
-      return reply.code(400).send({
-        error: 'Prompt is required',
-      });
+    console.log({ prompt, aiRouter });
+
+    // Classify the prompt
+    const classification = await classifyEmail(prompt);
+    console.log('Classification result:', classification);
+
+    // Create appropriate assistant
+    const assistant = AssistantFactory.createAssistant(
+      classification.type
+    );
+    if (!assistant) {
+      return reply
+        .code(500)
+        .send({ error: 'Failed to create assistant' });
     }
 
-    // First classify the prompt
-    const classification = await classifyEmail({ body: prompt });
-
-    // Create appropriate assistant based on classification
-    const assistant =
-      AssistantFactory.createAssistant(classification);
-
-    // Set up streaming response
+    // Set headers for SSE
     reply.raw.writeHead(200, {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache',
@@ -27,19 +32,19 @@ async function classifyAndProcess(request, reply) {
 
     // Stream the response
     await assistant.streamResponse(prompt, (chunk) => {
-      reply.raw.write(
-        `data: ${JSON.stringify({ content: chunk })}\n\n`
-      );
+      const data = JSON.stringify(chunk);
+      reply.raw.write(`data: ${data}\n\n`);
     });
 
     reply.raw.end();
   } catch (error) {
     console.error('AI Processing Error:', error);
-    return reply
-      .code(500)
-      .send({ error: 'Failed to process prompt' });
+    // Only send error if headers haven't been sent yet
+    if (!reply.sent) {
+      reply.code(500).send({ error: error.message });
+    }
   }
-}
+};
 
 async function streamResponse(req, res) {
   try {

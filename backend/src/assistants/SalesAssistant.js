@@ -1,22 +1,48 @@
-const Assistant = require('./Assistant');
+const { BaseAssistant } = require('./BaseAssistant');
 
-class SalesAssistant extends Assistant {
-  constructor() {
-    super();
-  }
+class SalesAssistant extends BaseAssistant {
+  async streamResponse(prompt, onChunk) {
+    try {
+      const response = await this.openai.chat.completions.create({
+        model: 'gpt-3.5-turbo',
+        messages: [
+          {
+            role: 'system',
+            content: `You are a sales email specialist. Generate concise, professional sales emails.
+            Requirements:
+            - Maximum 40 words total
+            - 7-10 words per sentence
+            - Professional but friendly tone
+            - Clear call-to-action
+            - Personalized when possible`,
+          },
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+        stream: true,
+      });
 
-  getSystemPrompt() {
-    return `You are a sales email specialist. Generate concise, professional sales emails.
-Requirements:
-- Maximum 40 words total
-- 7-10 words per sentence
-- Professional but friendly tone
-- Clear call-to-action
-- Personalized when possible
+      let currentSubject = '';
+      let currentBody = '';
 
-Format your response as:
-Subject: [Your subject line]
-[Your email body]`;
+      for await (const chunk of response) {
+        const content = chunk.choices[0]?.delta?.content || '';
+        if (content) {
+          if (!currentSubject) {
+            currentSubject = content;
+            onChunk({ field: 'subject', content: currentSubject });
+          } else {
+            currentBody += content;
+            onChunk({ field: 'body', content: currentBody });
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Sales Assistant Error:', error);
+      throw error;
+    }
   }
 
   async generateResponse(email) {
@@ -76,4 +102,4 @@ Subject: [Your subject line]
   }
 }
 
-module.exports = SalesAssistant;
+module.exports = { SalesAssistant };
