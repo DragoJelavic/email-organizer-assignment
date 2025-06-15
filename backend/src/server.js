@@ -1,6 +1,7 @@
 const fastify = require('fastify')({ logger: true });
 const cors = require('@fastify/cors');
 const emailRoutes = require('./routes/emailRoutes');
+const aiRoutes = require('./routes/aiRoutes');
 const validationErrorHandler = require('./middleware/validation');
 const env = require('./config/env');
 require('./config/database'); // Initialize database
@@ -13,6 +14,7 @@ fastify.register(cors, {
 
 // Register routes
 fastify.register(emailRoutes, { prefix: '/api' });
+fastify.register(aiRoutes, { prefix: '/api/ai' });
 
 // Register error handlers
 fastify.setErrorHandler(validationErrorHandler);

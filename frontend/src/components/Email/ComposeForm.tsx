@@ -15,6 +15,9 @@ import FormatItalicIcon from '@mui/icons-material/FormatItalic';
 import FormatUnderlinedIcon from '@mui/icons-material/FormatUnderlined';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import useEmailStore from '../../store/emailStore';
+import { AIButton } from '../AI/AIButton';
+import { useAI } from '../../hooks/useAI';
+import { useStreaming } from '../../hooks/useStreaming';
 
 interface ComposeFormProps {
   onClose: () => void;
@@ -31,6 +34,9 @@ const ComposeForm: React.FC<ComposeFormProps> = ({
   initialEmail,
 }) => {
   const { createEmail, updateEmail } = useEmailStore();
+  const { classifyIntent } = useAI();
+  const { streamResponse, loading: streamingLoading } =
+    useStreaming();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     to: initialEmail?.to || '',
@@ -61,6 +67,29 @@ const ComposeForm: React.FC<ComposeFormProps> = ({
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleAIGenerate = async (prompt: string) => {
+    try {
+      let currentSubject = '';
+      let currentBody = '';
+
+      await streamResponse(prompt, (response) => {
+        if (response.field === 'subject') {
+          currentSubject = response.content;
+          setFormData((prev) => ({
+            ...prev,
+            subject: currentSubject,
+          }));
+        } else if (response.field === 'body') {
+          currentBody = response.content;
+          setFormData((prev) => ({ ...prev, body: currentBody }));
+        }
+      });
+    } catch (error) {
+      console.error('Error generating email:', error);
+      // Handle error appropriately
+    }
   };
 
   return (
@@ -122,7 +151,9 @@ const ComposeForm: React.FC<ComposeFormProps> = ({
 
       <Divider sx={{ my: 2 }} />
 
-      <Box sx={{ mb: 2, display: 'flex', gap: 1 }}>
+      <Box
+        sx={{ mb: 2, display: 'flex', gap: 1, alignItems: 'center' }}
+      >
         <IconButton size="small">
           <FormatBoldIcon fontSize="small" />
         </IconButton>
@@ -138,6 +169,11 @@ const ComposeForm: React.FC<ComposeFormProps> = ({
         <IconButton size="small">
           <AttachFileIcon fontSize="small" />
         </IconButton>
+        <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
+        <AIButton
+          onGenerate={handleAIGenerate}
+          loading={streamingLoading}
+        />
       </Box>
 
       <TextField
